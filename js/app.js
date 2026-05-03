@@ -7,7 +7,7 @@ window.currentCatMap = {};
 window.onload = async function () {
   // 註冊 Service Worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 
   initTheme();
