@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>產生圖示</title></head>
+<body style="background:#f0f0f0; display:flex; flex-direction:column; align-items:center; padding:30px; font-family:sans-serif;">
+  <h2>包子記帳 圖示產生器</h2>
+  <canvas id="c192" width="192" height="192" style="display:none;"></canvas>
+  <canvas id="c512" width="512" height="512" style="display:none;"></canvas>
+  <div style="display:flex; gap:20px; margin:20px 0;">
+    <div style="text-align:center;">
+      <canvas id="preview192" width="192" height="192" style="border-radius:40px; box-shadow:0 4px 15px rgba(0,0,0,0.2);"></canvas>
+      <div style="margin-top:8px; color:#666;">192 × 192</div>
+    </div>
+    <div style="text-align:center;">
+      <canvas id="preview512" width="512" height="512" style="width:192px;height:192px; border-radius:40px; box-shadow:0 4px 15px rgba(0,0,0,0.2);"></canvas>
+      <div style="margin-top:8px; color:#666;">512 × 512</div>
+    </div>
+  </div>
+  <div style="display:flex; gap:12px;">
+    <button onclick="download(192)" style="padding:12px 24px; background:#000; color:#fff; border:none; border-radius:10px; font-size:16px; cursor:pointer;">下載 icon-192.png</button>
+    <button onclick="download(512)" style="padding:12px 24px; background:#000; color:#fff; border:none; border-radius:10px; font-size:16px; cursor:pointer;">下載 icon-512.png</button>
+  </div>
+  <p style="color:#888; margin-top:20px; font-size:13px;">下載後放入專案的 icons/ 資料夾</p>
+
+  <script>
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const r = size * 0.18;
+
+      // 背景圓角矩形
+      ctx.beginPath();
+      ctx.moveTo(r, 0);
+      ctx.lineTo(size - r, 0);
+      ctx.quadraticCurveTo(size, 0, size, r);
+      ctx.lineTo(size, size - r);
+      ctx.quadraticCurveTo(size, size, size - r, size);
+      ctx.lineTo(r, size);
+      ctx.quadraticCurveTo(0, size, 0, size - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+
+      // 漸層背景
+      const grad = ctx.createLinearGradient(0, 0, size, size);
+      grad.addColorStop(0, '#1a1a2e');
+      grad.addColorStop(1, '#16213e');
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // 包子 Emoji
+      ctx.font = `${size * 0.52}px serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🥟', size / 2, size * 0.46);
+
+      // 文字「記帳」
+      ctx.font = `bold ${size * 0.13}px -apple-system, sans-serif`;
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillText('記帳', size / 2, size * 0.82);
+    }
+
+    const p192 = document.getElementById('preview192');
+    const p512 = document.getElementById('preview512');
+    drawIcon(p192, 192);
+    drawIcon(p512, 512);
+
+    function download(size) {
+      const canvas = size === 192 ? p192 : p512;
+      const link = document.createElement('a');
+      link.download = `icon-${size}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  </script>
+</body>
+</html>
