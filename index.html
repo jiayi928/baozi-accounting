@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>包子記帳</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root { --bg:#f4f5f7; --card:#ffffff; --primary:#000000; --text:#333333; --border:#e0e0e0; --safe:#2ecc71; --danger:#e74c3c; --input-bg:#fafafa; }
+    body.dark-mode { --bg:#121212; --card:#1e1e1e; --primary:#ffffff; --text:#e0e0e0; --border:#333333; --input-bg:#2c2c2c; }
+    body { font-family:-apple-system,system-ui,sans-serif; background-color:var(--bg); color:var(--text); margin:0; padding-bottom:90px; transition:0.3s; }
+    .header { background:var(--card); padding:15px; text-align:center; font-size:18px; font-weight:bold; position:sticky; top:0; z-index:10; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 5px rgba(0,0,0,0.05); }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .syncing { animation:spin 1s linear infinite; color:#3498db !important; }
+    #syncBtn { font-size:22px; cursor:pointer; padding:5px 10px; color:#888; transition:0.2s; }
+    .page { display:none; padding:20px; animation:fadeIn 0.3s ease; }
+    .page.active { display:block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+    .hero-card { background:linear-gradient(135deg,#111,#333); color:white; border-radius:20px; padding:25px 20px; margin-bottom:20px; text-align:center; }
+    body.dark-mode .hero-card { background:linear-gradient(135deg,#222,#444); border:1px solid #444; }
+    .hero-title { font-size:13px; color:#aaa; margin-bottom:5px; }
+    .hero-networth { font-size:32px; font-weight:bold; margin-bottom:20px; }
+    .hero-stats { display:flex; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; }
+    .hero-stat-item { flex:1; font-size:11px; color:#bbb; display:flex; flex-direction:column; gap:4px; }
+    .hero-stat-val { font-size:16px; font-weight:bold; }
+    .card { background:var(--card); border-radius:16px; padding:20px; margin-bottom:20px; box-shadow:0 4px 12px rgba(0,0,0,0.04); }
+    .dash-title { font-size:14px; color:#888; margin-bottom:12px; font-weight:bold; }
+    .dash-item { display:flex; justify-content:space-between; align-items:center; padding:16px; margin-bottom:12px; background:var(--input-bg); border:1px solid var(--border); border-radius:14px; cursor:pointer; }
+    .val-pos { color:var(--safe); font-weight:bold; }
+    .val-neg { color:var(--danger); font-weight:bold; }
+    .search-box { width:100%; padding:12px; border:1px solid var(--border); border-radius:10px; background:var(--input-bg); color:var(--text); margin-bottom:15px; }
+    .bottom-nav { position:fixed; bottom:0; left:0; width:100%; background:var(--card); border-top:1px solid var(--border); display:flex; padding-bottom:env(safe-area-inset-bottom); z-index:100; }
+    .nav-item { flex:1; text-align:center; padding:12px 0; font-size:11px; color:#aaa; font-weight:bold; cursor:pointer; display:flex; flex-direction:column; align-items:center; }
+    .nav-item.active { color:var(--primary); }
+    .fab { position:fixed; bottom:85px; right:20px; width:56px; height:56px; background:var(--primary); color:var(--bg); border-radius:28px; display:flex; justify-content:center; align-items:center; font-size:30px; box-shadow:0 4px 15px rgba(0,0,0,0.3); z-index:150; cursor:pointer; }
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; justify-content:center; align-items:flex-end; }
+    .modal-content { background:var(--card); color:var(--text); width:100%; max-height:90vh; border-radius:20px 20px 0 0; padding:20px; box-sizing:border-box; overflow-y:auto; animation:slideUp 0.3s ease; }
+    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:15px; margin-bottom:15px; font-weight:bold; }
+    .close-btn { background:var(--border); color:var(--text); width:30px; height:30px; border-radius:15px; text-align:center; line-height:30px; cursor:pointer; }
+    input, select { width:100%; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--input-bg); color:var(--text); box-sizing:border-box; margin-bottom:10px; font-size:16px; }
+    .type-scroll { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; justify-content:center; }
+    .type-btn { background:var(--input-bg); border:1px solid var(--border); border-radius:20px; padding:8px 15px; font-size:13px; font-weight:bold; cursor:pointer; color:#888; }
+    .type-btn.active { background:var(--primary); color:var(--bg); border-color:var(--primary); }
+    .submit-btn { width:100%; background:var(--primary); color:var(--bg); border:none; padding:16px; border-radius:12px; font-weight:bold; cursor:pointer; }
+    .detail-row { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid var(--border); font-size:14px; }
+    .action-item { padding:18px; text-align:center; font-size:16px; border-bottom:1px solid var(--border); cursor:pointer; }
+    .cat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:15px; }
+    .cat-item { display:flex; flex-direction:column; align-items:center; padding:12px 5px; background:var(--input-bg); border:1px solid var(--border); border-radius:12px; cursor:pointer; }
+    .cat-item.active { background:var(--primary); color:var(--bg); }
+    .cat-icon { font-size:24px; margin-bottom:6px; }
+    .cat-name { font-size:11px; font-weight:600; text-align:center; }
+    .mini-pill-btn { background:var(--input-bg); border:1px solid var(--border); border-radius:12px; padding:12px; font-size:14px; font-weight:bold; text-align:center; color:#888; flex:1; cursor:pointer; }
+    .mini-pill-radio { display:none; }
+    .mini-pill-radio:checked + .mini-pill-btn { background:var(--primary); color:var(--bg); }
+    #templateList::-webkit-scrollbar { display:none; }
+    .clickable-legend { transition:background-color 0.2s; border-radius:8px; padding:8px; margin:-4px -8px; cursor:pointer; }
+    .clickable-legend:hover { background-color:rgba(128,128,128,0.1); }
+
+    /* ── 登入畫面 ── */
+    #loginScreen { position:fixed; inset:0; background:var(--bg); display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:1000; padding:40px 30px; box-sizing:border-box; }
+    .login-logo { font-size:72px; margin-bottom:20px; }
+    .login-title { font-size:28px; font-weight:bold; color:var(--text); margin-bottom:8px; }
+    .login-subtitle { font-size:14px; color:#888; margin-bottom:40px; text-align:center; line-height:1.6; }
+    #signInBtn { display:flex; align-items:center; gap:12px; background:var(--card); color:var(--text); border:2px solid var(--border); border-radius:14px; padding:16px 24px; font-size:16px; font-weight:bold; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.08); transition:0.2s; }
+    #signInBtn:hover { box-shadow:0 6px 20px rgba(0,0,0,0.15); transform:translateY(-1px); }
+    #signInBtn:disabled { opacity:0.6; cursor:default; transform:none; }
+    .google-icon { width:24px; height:24px; }
+
+    /* ── 使用者資訊（設定頁）── */
+    .user-card { display:flex; align-items:center; gap:15px; padding:16px; background:var(--input-bg); border:1px solid var(--border); border-radius:14px; margin-bottom:12px; }
+    #userAvatar { width:48px; height:48px; border-radius:24px; object-fit:cover; }
+    .setting-label { font-size:13px; color:#888; margin-bottom:6px; margin-top:12px; font-weight:bold; }
+  </style>
+</head>
+<body>
+
+  <!-- ── 登入畫面 ── -->
+  <div id="loginScreen">
+    <div class="login-logo">🥟</div>
+    <div class="login-title">包子記帳</div>
+    <div class="login-subtitle">簡單記錄每一筆花費<br>資料安全存在您的 Google 雲端</div>
+    <button id="signInBtn" onclick="handleSignIn()">
+      <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      使用 Google 帳號登入
+    </button>
+  </div>
+
+  <!-- ── 主程式 ── -->
+  <div id="appWrapper" style="display:none;">
+    <div class="header">
+      <span style="width:40px;"></span>
+      <span id="headerTitle">交易紀錄</span>
+      <span id="syncBtn" onclick="manualUpdate()">↻</span>
+    </div>
+
+    <!-- 明細頁 -->
+    <div id="page-history" class="page active">
+      <div class="card" id="chartCard" style="display:none;">
+        <div style="position:relative;height:220px;margin-bottom:20px;">
+          <canvas id="expenseChart"></canvas>
+          <div id="chartCenterTotal" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;"></div>
+        </div>
+        <div style="font-size:11px;color:#888;text-align:center;margin-bottom:15px;">💡 點擊分類或圓餅圖可查看明細</div>
+        <div id="chartLegend" style="display:flex;flex-direction:column;gap:12px;padding:0 5px;"></div>
+      </div>
+      <div class="card">
+        <input type="month" id="monthPicker" onchange="manualUpdate()" style="font-weight:bold;">
+        <input type="text" id="searchInput" class="search-box" placeholder="🔍 搜尋紀錄..." onkeyup="filterHistory()">
+        <div id="searchSummary" style="display:none;font-size:13px;color:#666;margin-bottom:15px;padding:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;line-height:1.5;"></div>
+        <div id="historyList"></div>
+      </div>
+    </div>
+
+    <!-- 總覽頁 -->
+    <div id="page-dashboard" class="page">
+      <div class="hero-card">
+        <div class="hero-title">累積淨資產</div>
+        <div class="hero-networth" id="ui-networth">...</div>
+        <div class="hero-stats">
+          <div class="hero-stat-item">流動資產 <span class="hero-stat-val val-pos" id="ui-liquid">...</span></div>
+          <div class="hero-stat-item"><span id="ui-invest-label">長期投資</span> <span class="hero-stat-val" style="color:#3498db" id="ui-invest">...</span></div>
+          <div class="hero-stat-item">負債 <span class="hero-stat-val val-neg" id="ui-liabilities">...</span></div>
+        </div>
+        <div style="font-size:10px;color:#aaa;margin-top:10px;">💡 投資帳戶為不可隨意動用之資金</div>
+      </div>
+      <div id="dashContent"></div>
+    </div>
+
+    <!-- 設定頁 -->
+    <div id="page-settings" class="page">
+      <!-- 帳號 -->
+      <div class="card">
+        <div class="dash-title">👤 帳號</div>
+        <div class="user-card">
+          <img id="userAvatar" src="" alt="頭像">
+          <div>
+            <div id="userName" style="font-weight:bold;font-size:15px;"></div>
+            <div id="userEmail" style="font-size:12px;color:#888;margin-top:2px;"></div>
+          </div>
+        </div>
+        <button class="type-btn" style="width:100%;padding:12px;color:var(--danger);border-color:var(--danger);" onclick="handleSignOut()">登出</button>
+      </div>
+
+      <!-- 外觀 -->
+      <div class="card">
+        <div class="dash-title">🌗 外觀主題</div>
+        <div class="type-scroll">
+          <div class="type-btn theme-opt" onclick="setTheme('light',this)">亮色模式</div>
+          <div class="type-btn theme-opt" onclick="setTheme('dark',this)">深色模式</div>
+          <div class="type-btn theme-opt active" onclick="setTheme('auto',this)">跟隨系統</div>
+        </div>
+      </div>
+
+      <!-- 個人化設定 -->
+      <div class="card">
+        <div class="dash-title">🎨 個人化設定</div>
+        <div class="setting-label">App 名稱</div>
+        <input type="text" id="setting_appName" placeholder="包子記帳">
+        <div class="setting-label">投資帳戶關鍵字</div>
+        <input type="text" id="setting_investKeyword" placeholder="例：富邦證券">
+        <div class="setting-label">投資帳戶標籤</div>
+        <input type="text" id="setting_investLabel" placeholder="例：長期投資">
+        <div class="setting-label">圖表排除分類（逗號分隔）</div>
+        <input type="text" id="setting_excludeCategories" placeholder="例：ETF定期定額,學貸">
+        <div class="setting-label">大額消費警報門檻（元）</div>
+        <input type="number" id="setting_alertThreshold" placeholder="3000">
+        <div class="setting-label">警報忽略關鍵字（逗號分隔）</div>
+        <input type="text" id="setting_alertIgnoreWords" placeholder="例：生日,過年">
+        <button class="submit-btn" id="saveSettingsBtn" style="margin-top:10px;" onclick="saveSettings()">儲存設定</button>
+      </div>
+
+      <!-- LINE 設定 -->
+      <div class="card">
+        <div class="dash-title">🤖 LINE 通知設定</div>
+        <div style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.6;">填入您的 LINE Bot Channel Token 與 User ID，即可接收財務推播通知。</div>
+        <div class="setting-label">Channel Access Token</div>
+        <input type="text" id="setting_lineToken" placeholder="貼上 LINE Token">
+        <div class="setting-label">LINE User ID</div>
+        <input type="text" id="setting_lineUserId" placeholder="例：U1cc6ad...">
+        <div class="detail-row"><span>發送財務報表至 LINE</span><button class="type-btn" style="margin:0" onclick="sendReportNow(this)">立即發送</button></div>
+        <div class="detail-row"><span>查看自動扣款排程</span><button class="type-btn" style="margin:0" onclick="viewFixedExpenses()">點擊查看</button></div>
+      </div>
+
+      <!-- 進階 -->
+      <div class="card">
+        <div class="dash-title">🛠️ 進階管理</div>
+        <div class="detail-row"><span>前往 Google 試算表</span><button class="type-btn" style="margin:0" onclick="openSheet()">點擊開啟</button></div>
+        <div class="detail-row"><span>清除本地快取</span><button class="type-btn" style="margin:0" onclick="clearCache()">立即清除</button></div>
+      </div>
+    </div>
+
+    <div class="fab" onclick="openRecordModal()">＋</div>
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="switchPage('history',this)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>明細</div>
+      <div class="nav-item" onclick="switchPage('dashboard',this)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>總覽</div>
+      <div class="nav-item" onclick="switchPage('settings',this)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>設定</div>
+    </div>
+
+    <!-- 新增/編輯紀錄 Modal -->
+    <div id="recordModal" class="modal"><div class="modal-content">
+      <div class="modal-header"><span id="recordModalTitle">📝 新增紀錄</span><div class="close-btn" onclick="closeRecordModal()">✕</div></div>
+      <form id="recordForm">
+        <div class="type-scroll" id="mainTypeScroll">
+          <div class="type-btn active" onclick="selectMainType('支出',this)">支出</div>
+          <div class="type-btn" onclick="selectMainType('收入',this)">收入</div>
+          <div class="type-btn" onclick="selectMainType('轉帳',this)">轉帳</div>
+          <div class="type-btn" onclick="selectMainType('點數折抵',this)">🎁 點數折抵</div>
+          <div class="type-btn" onclick="selectMainType('手續費',this)">🏧 手續費</div>
+          <div class="type-btn" id="btnFixedExp" onclick="selectMainType('固定支出',this)">固定支出</div>
+          <div class="type-btn" id="btnSub" onclick="selectMainType('訂閱',this)">訂閱</div>
+          <div class="type-btn" onclick="selectMainType('繳卡費',this)">繳卡費</div>
+          <div class="type-btn" onclick="selectMainType('借出',this)">借出</div>
+          <div class="type-btn" onclick="selectMainType('收回',this)">收回</div>
+        </div>
+        <div id="fixedTypeWrapper" style="display:none;margin-bottom:15px;">
+          <div style="font-size:12px;color:#888;margin-bottom:10px;text-align:center;">💡 此排程的扣款形式：</div>
+          <div style="display:flex;gap:10px;">
+            <label style="flex:1;"><input type="radio" name="fixedType" value="固定支出" class="mini-pill-radio" checked onchange="updateFormUI()"><div class="mini-pill-btn">💸 支出</div></label>
+            <label style="flex:1;"><input type="radio" name="fixedType" value="轉帳" class="mini-pill-radio" onchange="updateFormUI()"><div class="mini-pill-btn">🔄 轉帳</div></label>
+          </div>
+        </div>
+        <div id="templateWrapper" style="display:none;margin-bottom:15px;">
+          <div style="font-size:13px;color:#888;font-weight:bold;display:flex;justify-content:space-between;align-items:center;">
+            <span>⭐ 常用模板</span><span onclick="saveCurrentAsTemplate()" style="cursor:pointer;background:var(--input-bg);border:1px solid var(--border);padding:4px 8px;border-radius:6px;font-size:11px;">＋ 儲存目前</span>
+          </div>
+          <div id="templateList" style="display:flex;overflow-x:auto;padding:8px 0;gap:8px;white-space:nowrap;"></div>
+        </div>
+        <input type="date" id="recordDate" required>
+        <div id="dateHint" style="display:none;font-size:12px;color:#888;margin-top:-5px;margin-bottom:15px;text-align:center;">💡 將以所選日期的「<span style="color:var(--primary);font-weight:bold;">號碼</span>」作為每月扣款日</div>
+        <div id="periodsWrapper" style="display:none;gap:10px;margin-bottom:10px;">
+          <input type="number" id="totalPeriods" placeholder="總期數 (選填)" style="flex:1;margin-bottom:0;" min="1">
+          <input type="number" id="paidPeriods" placeholder="已繳期數 (選填)" style="flex:1;margin-bottom:0;" min="0">
+        </div>
+        <input type="number" id="amount" placeholder="金額" required>
+        <input type="text" id="item" placeholder="項目" required>
+        <div id="categoryLabel" style="font-size:13px;color:#888;margin-bottom:8px;font-weight:bold;">選擇分類：</div>
+        <div id="categoryGrid" class="cat-grid"></div>
+        <select id="accountOut" onchange="checkNewAccount(this)"></select>
+        <select id="accountIn" style="display:none;" onchange="checkNewAccount(this)"></select>
+        <button type="submit" class="submit-btn" id="submitBtn">送出紀錄</button>
+        <input type="hidden" id="editRow" value="">
+        <input type="hidden" id="category" value="">
+        <input type="hidden" id="type" value="支出">
+      </form>
+    </div></div>
+
+    <!-- 輸入 Modal -->
+    <div id="inputModal" class="modal" style="z-index:300;"><div class="modal-content" style="padding-bottom:env(safe-area-inset-bottom,20px);">
+      <div class="modal-header"><span id="inputModalTitle">新增項目</span><div class="close-btn" onclick="closeInputModal()">✕</div></div>
+      <input type="text" id="inputModalText" placeholder="請輸入名稱..." style="margin-bottom:20px;">
+      <div style="display:flex;gap:10px;"><button class="type-btn" style="flex:1;padding:14px;margin:0;" type="button" onclick="closeInputModal()">取消</button><button class="submit-btn" style="flex:1;margin:0;" type="button" onclick="confirmInputModal()">確認送出</button></div>
+    </div></div>
+
+    <!-- 銀行 Modal -->
+    <div id="bankModal" class="modal" style="z-index:300;"><div class="modal-content" style="padding-bottom:env(safe-area-inset-bottom,20px);">
+      <div class="modal-header"><span>🏦 新增銀行帳戶</span><div class="close-btn" onclick="closeBankModal()">✕</div></div>
+      <input type="text" id="bankName" placeholder="銀行名稱 (例：中信薪轉)" required>
+      <input type="number" id="bankInitial" placeholder="初始金額 (例：50000)" required>
+      <input type="text" id="bankNote" placeholder="備註 (選填)">
+      <div style="display:flex;gap:10px;margin-top:10px;"><button class="type-btn" style="flex:1;padding:14px;margin:0;" type="button" onclick="closeBankModal()">取消</button><button class="submit-btn" style="flex:1;margin:0;" type="button" onclick="submitBankModal()">確認送出</button></div>
+    </div></div>
+
+    <!-- 信用卡 Modal -->
+    <div id="ccModal" class="modal" style="z-index:300;"><div class="modal-content" style="padding-bottom:env(safe-area-inset-bottom,20px);">
+      <div class="modal-header"><span>💳 新增信用卡</span><div class="close-btn" onclick="closeCcModal()">✕</div></div>
+      <input type="text" id="ccName" placeholder="卡片名稱 (例：台新 @GoGo)" required>
+      <input type="number" id="ccLimit" placeholder="信用總額度 (例：100000)" required>
+      <div style="display:flex;gap:10px;"><input type="number" id="ccBillDate" placeholder="結帳日" min="1" max="31" style="flex:1;" required><input type="number" id="ccPayDate" placeholder="繳款日" min="1" max="31" style="flex:1;" required></div>
+      <select id="ccAutoPayAccount" style="margin-bottom:5px;"></select>
+      <div style="display:flex;gap:10px;margin-top:15px;"><button class="type-btn" style="flex:1;padding:14px;margin:0;" type="button" onclick="closeCcModal()">取消</button><button class="submit-btn" style="flex:1;margin:0;" type="button" onclick="submitCcModal()">確認送出</button></div>
+    </div></div>
+
+    <!-- 操作選單 Modal -->
+    <div id="actionModal" class="modal" style="z-index:350;"><div class="modal-content" style="padding:0">
+      <div style="padding:20px;text-align:center;border-bottom:1px solid var(--border);font-size:14px;color:#888;font-weight:bold;">請選擇操作</div>
+      <div class="action-item" onclick="handleEditAction()" style="color:var(--text)">✏️ 編輯</div>
+      <div class="action-item" onclick="handleDeleteAction()" style="color:var(--danger)">🗑️ 刪除</div>
+      <div class="action-item" onclick="closeActionMenu()" style="border:none;color:#888">取消</div>
+    </div></div>
+
+    <!-- 確認 Modal -->
+    <div id="confirmModal" class="modal" style="z-index:400;"><div class="modal-content" style="padding-bottom:env(safe-area-inset-bottom,20px);">
+      <div class="modal-header"><span>請確認</span><div class="close-btn" onclick="closeConfirmModal()">✕</div></div>
+      <div id="confirmText" style="margin-bottom:20px;font-size:16px;text-align:center;padding:10px 0;">確定要執行嗎？</div>
+      <div style="display:flex;gap:10px;"><button class="type-btn" style="flex:1;padding:14px;margin:0;" type="button" onclick="closeConfirmModal()">取消</button><button class="submit-btn" style="flex:1;margin:0;" type="button" onclick="executeConfirm()">確定</button></div>
+    </div></div>
+
+    <!-- 明細 Modal -->
+    <div id="detailModal" class="modal"><div class="modal-content">
+      <div class="modal-header"><span id="detailTitle">帳戶明細</span><div class="close-btn" onclick="closeDetails()">✕</div></div>
+      <div id="detailList"></div>
+    </div></div>
+
+    <!-- 系統訊息 Modal -->
+    <div id="msgModal" class="modal" style="z-index:500;"><div class="modal-content" style="text-align:center">
+      <div class="modal-header"><span>系統提示</span><div class="close-btn" onclick="document.getElementById('msgModal').style.display='none'">✕</div></div>
+      <div id="msgText" style="padding:20px 0;white-space:pre-wrap;font-size:16px;"></div>
+      <button class="submit-btn" onclick="document.getElementById('msgModal').style.display='none'">確定</button>
+    </div></div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/sheets.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
