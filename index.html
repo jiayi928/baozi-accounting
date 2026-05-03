@@ -158,6 +158,24 @@
         </div>
       </div>
 
+      <!-- 桌面圖示 -->
+      <div class="card">
+        <div class="dash-title">🖼️ 桌面圖示</div>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+          <div id="iconPreviewBox" style="width:72px;height:72px;border-radius:16px;overflow:hidden;background:var(--input-bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">🥟</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:bold;margin-bottom:4px;">目前圖示</div>
+            <div id="iconStatusText" style="font-size:12px;color:#888;">使用預設圖示</div>
+          </div>
+        </div>
+        <input type="file" id="iconFile" accept="image/*" style="display:none" onchange="handleIconUpload(this)">
+        <div style="display:flex;gap:10px;">
+          <button class="type-btn" style="flex:1;padding:12px;" onclick="document.getElementById('iconFile').click()">📷 上傳自訂圖示</button>
+          <button class="type-btn" style="flex:1;padding:12px;" onclick="resetIcon()">↩ 恢復預設</button>
+        </div>
+        <div style="font-size:12px;color:#888;margin-top:10px;text-align:center;">更換後請重新將 App 加入桌面</div>
+      </div>
+
       <!-- 個人化設定 -->
       <div class="card">
         <div class="dash-title">🎨 個人化設定</div>

@@ -23,6 +23,7 @@ window.onload = async function () {
 async function startApp() {
   showAppScreen();
   initMonthPicker();
+  initIconPreview();
 
   // 載入快取（立即顯示）
   const cd = localStorage.getItem('appDataCache');
@@ -635,6 +636,85 @@ function clearCache() {
   if(theme) localStorage.setItem('appTheme',theme);
   if(tpls) localStorage.setItem('appTemplates',tpls);
   showAlert('快取已清除，請重新整理頁面。');
+}
+
+// ── 桌面圖示 ──────────────────────────────────────────────
+function handleIconUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const icon192 = _resizeImage(img, 192);
+      const icon512 = _resizeImage(img, 512);
+      localStorage.setItem('customIcon192', icon192);
+      localStorage.setItem('customIcon512', icon512);
+      updateDynamicManifest();
+      _showIconPreview(icon192);
+      showAlert('✅ 圖示已更新！\n請重新將 App 加入桌面以套用新圖示。');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function _resizeImage(img, size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  // 置中裁切為正方形
+  const min = Math.min(img.width, img.height);
+  const sx = (img.width - min) / 2;
+  const sy = (img.height - min) / 2;
+  ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+  return canvas.toDataURL('image/png');
+}
+
+function _showIconPreview(icon192) {
+  const box = document.getElementById('iconPreviewBox');
+  const status = document.getElementById('iconStatusText');
+  if (icon192) {
+    box.innerHTML = `<img src="${icon192}" style="width:100%;height:100%;object-fit:cover;">`;
+    if (status) status.innerText = '使用自訂圖示';
+  } else {
+    box.innerHTML = '🥟';
+    if (status) status.innerText = '使用預設圖示';
+  }
+}
+
+function resetIcon() {
+  localStorage.removeItem('customIcon192');
+  localStorage.removeItem('customIcon512');
+  updateDynamicManifest();
+  _showIconPreview(null);
+  showAlert('✅ 已恢復預設圖示。\n請重新將 App 加入桌面以套用。');
+}
+
+function updateDynamicManifest() {
+  const icon192 = localStorage.getItem('customIcon192');
+  const icon512 = localStorage.getItem('customIcon512');
+  const appName = globalData?.settings?.appName || '包子記帳';
+  const manifest = {
+    name: appName, short_name: appName,
+    start_url: './', display: 'standalone',
+    background_color: '#ffffff', theme_color: '#000000',
+    icons: icon192
+      ? [{ src: icon192, sizes: '192x192', type: 'image/png' },
+         { src: icon512 || icon192, sizes: '512x512', type: 'image/png' }]
+      : [{ src: './icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+         { src: './icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.querySelector('link[rel="manifest"]');
+  if (link) link.href = url;
+}
+
+function initIconPreview() {
+  const icon192 = localStorage.getItem('customIcon192');
+  _showIconPreview(icon192 || null);
+  updateDynamicManifest();
 }
 
 // ── 彈出提示 ──────────────────────────────────────────────
