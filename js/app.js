@@ -112,7 +112,7 @@ function applySettingsToUI(settings) {
   document.getElementById('ui-invest-label').innerText = settings.investLabel || '長期投資';
   // 同步設定頁面欄位
   const fields = ['appName','investKeyword','investLabel','excludeCategories',
-                  'alertThreshold','alertIgnoreWords','lineToken','lineUserId'];
+                  'alertThreshold','alertIgnoreWords','lineUserId'];
   fields.forEach(f => {
     const el = document.getElementById('setting_' + f);
     if (el) el.value = settings[f] || '';
@@ -123,7 +123,7 @@ async function saveSettings() {
   const btn = document.getElementById('saveSettingsBtn');
   btn.innerText = '儲存中...'; btn.disabled = true;
   const fields = ['appName','investKeyword','investLabel','excludeCategories',
-                  'alertThreshold','alertIgnoreWords','lineToken','lineUserId'];
+                  'alertThreshold','alertIgnoreWords','lineUserId'];
   const settings = { ...CONFIG.DEFAULT_SETTINGS };
   fields.forEach(f => {
     const el = document.getElementById('setting_' + f);

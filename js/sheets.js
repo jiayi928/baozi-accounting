@@ -409,14 +409,20 @@ const Sheets = {
       }));
   },
 
-  // ── LINE 推播（需要後端 Proxy，此為客戶端版本）─────────
+  // ── LINE 推播（透過 GAS Proxy）────────────────────────────
 
   async sendLineMessage(message) {
     const settings = await this.getSettings();
-    if (!settings.lineToken || !settings.lineUserId) return;
-    // 注意：LINE API 不支援瀏覽器直接呼叫（CORS）
-    // 此功能需搭配 Cloud Function proxy 才能運作
-    // 暫時以 console.log 替代
-    console.log('[LINE]', message);
+    if (!settings.lineUserId || !CONFIG.GAS_PROXY_URL) return;
+    fetch(CONFIG.GAS_PROXY_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: settings.lineUserId,
+        message,
+        authKey: CONFIG.LINE_AUTH_KEY
+      })
+    }).catch(() => {});
   }
 };

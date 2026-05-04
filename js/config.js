@@ -11,6 +11,10 @@ const CONFIG = {
 
   SPREADSHEET_TITLE: '包子記帳資料',
 
+  // 部署 gas-proxy.gs 後填入產生的 URL
+  GAS_PROXY_URL: 'https://line-bot-proxy-50636553434.asia-east1.run.app',
+  LINE_AUTH_KEY: 'baozi2025',
+
   SHEETS: {
     RECORDS:    '紀錄頁',
     ACCOUNTS:   '帳戶與信用卡',
@@ -29,7 +33,6 @@ const CONFIG = {
     alertIgnoreWords: '生日,過年',
     themeColor:       '#000000',
     bgColor:          '#ffffff',
-    lineToken:        '',
     lineUserId:       ''
   },
 
