@@ -14,6 +14,7 @@ const CONFIG = {
   // 部署 gas-proxy.gs 後填入產生的 URL
   GAS_PROXY_URL: 'https://line-bot-proxy-50636553434.asia-east1.run.app',
   LINE_AUTH_KEY: 'baozi2025',
+  LIFF_ID: '2009972460-c1ivDfyC',
 
   SHEETS: {
     RECORDS:    '紀錄頁',

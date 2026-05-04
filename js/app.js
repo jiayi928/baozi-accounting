@@ -94,6 +94,14 @@ function applySyncData(res, m) {
   renderHistoryList(res.history);
   drawChart(res.history);
   document.getElementById('syncBtn').classList.remove('syncing');
+
+  // LIFF 回調：自動儲存 LINE User ID
+  const pendingLineId = localStorage.getItem('pendingLineUserId');
+  if (pendingLineId) {
+    localStorage.removeItem('pendingLineUserId');
+    document.getElementById('setting_lineUserId').value = pendingLineId;
+    saveSettings().then(() => showAlert('✅ LINE 帳號已成功連結！'));
+  }
 }
 
 function manualUpdate() {
@@ -110,13 +118,32 @@ function manualUpdate() {
 function applySettingsToUI(settings) {
   if (!settings) return;
   document.getElementById('ui-invest-label').innerText = settings.investLabel || '長期投資';
-  // 同步設定頁面欄位
   const fields = ['appName','investKeyword','investLabel','excludeCategories',
                   'alertThreshold','alertIgnoreWords','lineUserId'];
   fields.forEach(f => {
     const el = document.getElementById('setting_' + f);
     if (el) el.value = settings[f] || '';
   });
+  updateLineStatus(settings.lineUserId);
+}
+
+function updateLineStatus(userId) {
+  const statusEl = document.getElementById('lineConnectedStatus');
+  const nameEl = document.getElementById('lineConnectedName');
+  const btn = document.getElementById('lineConnectBtn');
+  if (userId) {
+    const name = localStorage.getItem('pendingLineName') || (userId.substring(0, 8) + '…');
+    if (statusEl) statusEl.style.display = 'flex';
+    if (nameEl) nameEl.innerText = name;
+    if (btn) btn.innerText = '🔄 重新連結 LINE';
+  } else {
+    if (statusEl) statusEl.style.display = 'none';
+    if (btn) btn.innerText = '🔗 連結 LINE 帳號';
+  }
+}
+
+function connectLine() {
+  location.href = 'https://liff.line.me/' + CONFIG.LIFF_ID;
 }
 
 async function saveSettings() {

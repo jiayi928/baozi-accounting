@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>連結 LINE 帳號</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f0f4f8; }
+    .card { background: #fff; border-radius: 24px; padding: 40px 30px; text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.12); max-width: 320px; width: 90%; }
+    .emoji { font-size: 60px; margin-bottom: 20px; }
+    h2 { font-size: 20px; margin-bottom: 10px; color: #333; }
+    p { color: #888; font-size: 14px; line-height: 1.6; white-space: pre-line; }
+    .success { color: #06C755; }
+    .error { color: #e53e3e; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="emoji" id="emoji">⏳</div>
+    <h2 id="title">連結中...</h2>
+    <p id="desc">正在取得您的 LINE 帳號資訊</p>
+  </div>
+  <script>
+    liff.init({ liffId: '2009972460-c1ivDfyC' })
+      .then(async () => {
+        if (!liff.isLoggedIn()) {
+          liff.login({ redirectUri: location.href });
+          return;
+        }
+        const profile = await liff.getProfile();
+        localStorage.setItem('pendingLineUserId', profile.userId);
+        localStorage.setItem('pendingLineName', profile.displayName);
+
+        document.getElementById('emoji').innerText = '✅';
+        document.getElementById('title').innerText = '連結成功！';
+        document.getElementById('title').classList.add('success');
+        document.getElementById('desc').innerText = `歡迎，${profile.displayName}！\n即將返回 App…`;
+
+        setTimeout(() => {
+          if (liff.isInClient()) {
+            liff.closeWindow();
+          } else {
+            location.href = './index.html';
+          }
+        }, 1500);
+      })
+      .catch(err => {
+        document.getElementById('emoji').innerText = '❌';
+        document.getElementById('title').innerText = '連結失敗';
+        document.getElementById('title').classList.add('error');
+        document.getElementById('desc').innerText = err.message;
+      });
+  </script>
+</body>
+</html>

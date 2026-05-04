@@ -197,18 +197,16 @@
       <!-- LINE 設定 -->
       <div class="card">
         <div class="dash-title">🤖 LINE 通知設定</div>
-        <div style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.6;">
-          加入官方帳號 <b>@570lljaw</b>，Bot 會自動回覆您的 User ID。<br>
-          將 ID 填入下方即可收到財務推播通知。
+        <div id="lineConnectedStatus" style="display:none;background:#e8f5e9;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#2e7d32;align-items:center;gap:8px;">
+          ✅ 已連結：<span id="lineConnectedName" style="font-weight:bold;"></span>
         </div>
-        <div style="margin-bottom:12px;">
-          <a href="https://line.me/R/ti/p/@570lljaw" target="_blank"
-             style="display:inline-block;background:#06C755;color:#fff;padding:10px 20px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:14px;">
-            📲 加入 LINE 好友
-          </a>
+        <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;">
+          點下方按鈕，透過 LINE 授權自動連結帳號，不需手動複製 ID。
         </div>
-        <div class="setting-label">LINE User ID</div>
-        <input type="text" id="setting_lineUserId" placeholder="加好友後 Bot 會傳送您的 ID">
+        <button id="lineConnectBtn" onclick="connectLine()" style="display:block;width:100%;background:#06C755;color:#fff;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer;margin-bottom:14px;">
+          🔗 連結 LINE 帳號
+        </button>
+        <input type="hidden" id="setting_lineUserId">
         <div class="detail-row"><span>發送財務報表至 LINE</span><button class="type-btn" style="margin:0" onclick="sendReportNow(this)">立即發送</button></div>
         <div class="detail-row"><span>查看自動扣款排程</span><button class="type-btn" style="margin:0" onclick="viewFixedExpenses()">點擊查看</button></div>
       </div>
