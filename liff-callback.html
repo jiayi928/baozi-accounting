@@ -38,11 +38,15 @@
         document.getElementById('title').classList.add('success');
         document.getElementById('desc').innerText = `歡迎，${profile.displayName}！\n即將返回 App…`;
 
+        const appUrl = 'https://jiayi928.github.io/baozi-accounting/?lineUserId='
+          + encodeURIComponent(profile.userId)
+          + '&lineName=' + encodeURIComponent(profile.displayName);
+
         setTimeout(() => {
           if (liff.isInClient()) {
-            liff.closeWindow();
+            liff.openWindow({ url: appUrl, external: true });
           } else {
-            location.href = './index.html';
+            location.href = appUrl;
           }
         }, 1500);
       })

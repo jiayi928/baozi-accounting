@@ -5,6 +5,16 @@ window.currentCatMap = {};
 
 // ── 啟動 ─────────────────────────────────────────────────
 window.onload = async function () {
+  // 從 LIFF 回調讀取 LINE User ID
+  const urlParams = new URLSearchParams(window.location.search);
+  const lineUserIdFromUrl = urlParams.get('lineUserId');
+  const lineNameFromUrl = urlParams.get('lineName');
+  if (lineUserIdFromUrl) {
+    localStorage.setItem('pendingLineUserId', lineUserIdFromUrl);
+    if (lineNameFromUrl) localStorage.setItem('pendingLineName', lineNameFromUrl);
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
   // 註冊 Service Worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
