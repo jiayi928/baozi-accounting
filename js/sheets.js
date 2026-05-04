@@ -414,15 +414,14 @@ const Sheets = {
   async sendLineMessage(message) {
     const settings = await this.getSettings();
     if (!settings.lineUserId || !CONFIG.GAS_PROXY_URL) return;
-    fetch(CONFIG.GAS_PROXY_URL, {
+    await fetch(CONFIG.GAS_PROXY_URL, {
       method: 'POST',
-      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: settings.lineUserId,
         message,
         authKey: CONFIG.LINE_AUTH_KEY
       })
-    }).catch(() => {});
+    });
   }
 };

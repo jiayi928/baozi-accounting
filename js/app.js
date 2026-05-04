@@ -619,8 +619,8 @@ function initMonthPicker() {
 
 function sendReportNow(b) {
   b.innerText='⏳ 發送中...'; b.disabled=true;
-  Sheets.sendLineMessage('手動觸發財務報表')
-    .then(() => showAlert('✅ 已發送（需設定 LINE Token）'))
+  Sheets.sendLineMessage('📊 包子記帳財務報表（手動觸發）')
+    .then(() => showAlert('✅ 已發送至 LINE！\n請確認有填入 LINE User ID 並儲存設定。'))
     .catch(e => showAlert('❌ 發送失敗：' + e.message))
     .finally(() => { b.innerText='立即發送'; b.disabled=false; });
 }
