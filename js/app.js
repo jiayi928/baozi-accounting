@@ -138,22 +138,32 @@ function applySettingsToUI(settings) {
 }
 
 function updateLineStatus(userId) {
-  const statusEl = document.getElementById('lineConnectedStatus');
+  const connectedEl = document.getElementById('lineConnectedStatus');
+  const disconnectedEl = document.getElementById('lineDisconnectedStatus');
   const nameEl = document.getElementById('lineConnectedName');
-  const btn = document.getElementById('lineConnectBtn');
   if (userId) {
-    const name = localStorage.getItem('pendingLineName') || (userId.substring(0, 8) + '…');
-    if (statusEl) statusEl.style.display = 'flex';
-    if (nameEl) nameEl.innerText = name;
-    if (btn) btn.innerText = '🔄 重新連結 LINE';
+    const name = localStorage.getItem('pendingLineName') || '';
+    if (connectedEl) connectedEl.style.display = 'block';
+    if (disconnectedEl) disconnectedEl.style.display = 'none';
+    if (nameEl) nameEl.innerText = name ? `帳號：${name}` : `ID：${userId.substring(0, 12)}…`;
   } else {
-    if (statusEl) statusEl.style.display = 'none';
-    if (btn) btn.innerText = '🔗 連結 LINE 帳號';
+    if (connectedEl) connectedEl.style.display = 'none';
+    if (disconnectedEl) disconnectedEl.style.display = 'block';
   }
 }
 
 function connectLine() {
   location.href = 'https://liff.line.me/' + CONFIG.LIFF_ID;
+}
+
+function disconnectLine() {
+  showConfirm('確定要取消 LINE 連結嗎？', async () => {
+    document.getElementById('setting_lineUserId').value = '';
+    localStorage.removeItem('pendingLineName');
+    await saveSettings();
+    updateLineStatus('');
+    showAlert('✅ 已取消 LINE 連結');
+  });
 }
 
 async function saveSettings() {

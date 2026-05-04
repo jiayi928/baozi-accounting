@@ -197,18 +197,37 @@
       <!-- LINE 設定 -->
       <div class="card">
         <div class="dash-title">🤖 LINE 通知設定</div>
-        <div id="lineConnectedStatus" style="display:none;background:#e8f5e9;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#2e7d32;align-items:center;gap:8px;">
-          ✅ 已連結：<span id="lineConnectedName" style="font-weight:bold;"></span>
+
+        <!-- 已連結狀態 -->
+        <div id="lineConnectedStatus" style="display:none;background:#e8f5e9;border-radius:12px;padding:14px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <span style="font-size:20px;">✅</span>
+            <div>
+              <div style="font-size:13px;color:#2e7d32;font-weight:bold;">LINE 帳號已連結</div>
+              <div style="font-size:12px;color:#555;margin-top:2px;" id="lineConnectedName"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="connectLine()" style="flex:1;background:#06C755;color:#fff;padding:9px;border:none;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;">🔄 重新連結</button>
+            <button onclick="disconnectLine()" style="flex:1;background:#fff;color:#e53e3e;padding:9px;border:1px solid #e53e3e;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;">✕ 取消連結</button>
+          </div>
         </div>
-        <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;">
-          點下方按鈕，透過 LINE 授權自動連結帳號，不需手動複製 ID。
+
+        <!-- 未連結狀態 -->
+        <div id="lineDisconnectedStatus">
+          <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;">
+            點下方按鈕，透過 LINE 授權自動連結帳號，不需手動複製 ID。
+          </div>
+          <button onclick="connectLine()" style="display:block;width:100%;background:#06C755;color:#fff;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer;">
+            🔗 連結 LINE 帳號
+          </button>
         </div>
-        <button id="lineConnectBtn" onclick="connectLine()" style="display:block;width:100%;background:#06C755;color:#fff;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer;margin-bottom:14px;">
-          🔗 連結 LINE 帳號
-        </button>
+
         <input type="hidden" id="setting_lineUserId">
-        <div class="detail-row"><span>發送財務報表至 LINE</span><button class="type-btn" style="margin:0" onclick="sendReportNow(this)">立即發送</button></div>
-        <div class="detail-row"><span>查看自動扣款排程</span><button class="type-btn" style="margin:0" onclick="viewFixedExpenses()">點擊查看</button></div>
+        <div style="margin-top:14px;">
+          <div class="detail-row"><span>發送財務報表至 LINE</span><button class="type-btn" style="margin:0" onclick="sendReportNow(this)">立即發送</button></div>
+          <div class="detail-row"><span>查看自動扣款排程</span><button class="type-btn" style="margin:0" onclick="viewFixedExpenses()">點擊查看</button></div>
+        </div>
       </div>
 
       <!-- 進階 -->
