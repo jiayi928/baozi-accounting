@@ -380,7 +380,7 @@ function openEditModal(row) {
   let baseType = d.type;
   if (baseType==='收回借款') baseType='收回';
   if (['固定支出','訂閱','固定'].includes(baseType)) baseType='支出';
-  document.querySelectorAll('.type-btn').forEach(b => { if(b.innerText.includes(baseType)) selectMainType(baseType,b); });
+  document.querySelectorAll('#recordForm .type-btn').forEach(b => { if(b.innerText.includes(baseType)) selectMainType(baseType,b); });
   setTimeout(() => { document.getElementById('accountOut').value=d.accOut; document.getElementById('accountIn').value=d.accIn; }, 100);
   document.getElementById('recordModal').style.display = 'flex';
 }
@@ -388,7 +388,7 @@ function openEditModal(row) {
 function closeRecordModal() { document.getElementById('recordModal').style.display = 'none'; }
 
 function selectMainType(v, b) {
-  document.querySelectorAll('.type-btn').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('#recordForm .type-btn').forEach(x => x.classList.remove('active'));
   if (b) b.classList.add('active');
   currentMainType = v;
   if (v==='手續費') {
@@ -628,7 +628,7 @@ function saveCurrentAsTemplate() {
 
 function applyTemplate(idx) {
   const t=JSON.parse(localStorage.getItem('appTemplates')||'[]')[idx]; if(!t) return;
-  document.querySelectorAll('.type-btn').forEach(b => { if(b.innerText.includes(t.type)) selectMainType(t.type,b); });
+  document.querySelectorAll('#recordForm .type-btn').forEach(b => { if(b.innerText.includes(t.type)) selectMainType(t.type,b); });
   document.getElementById('amount').value=t.amount; document.getElementById('item').value=t.item;
   document.querySelectorAll('.cat-item').forEach(el => { if(el.getAttribute('data-cat')===t.category) selectGridCategory(t.category,el); });
   setTimeout(() => { document.getElementById('accountOut').value=t.accOut||''; document.getElementById('accountIn').value=t.accIn||''; }, 50);

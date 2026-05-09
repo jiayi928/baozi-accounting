@@ -48,11 +48,11 @@
     .type-scroll { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; justify-content:center; }
     .type-btn { background:var(--input-bg); border:1px solid var(--border); border-radius:20px; padding:8px 15px; font-size:13px; font-weight:bold; cursor:pointer; color:#888; }
     .type-btn.active { background:var(--primary); color:var(--bg); border-color:var(--primary); }
-    #mainTypeScroll { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:20px; }
-    #mainTypeScroll .type-btn { border-radius:12px; padding:10px 4px; font-size:11px; display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; line-height:1.3; }
-    #mainTypeScroll .type-btn .ti { font-size:20px; line-height:1; }
-    #mainTypeScroll .type-btn:nth-child(9), #mainTypeScroll .type-btn:nth-child(10) { grid-column:span 2; flex-direction:row; gap:6px; justify-content:center; padding:10px; font-size:12px; }
-    #mainTypeScroll .type-btn:nth-child(9) .ti, #mainTypeScroll .type-btn:nth-child(10) .ti { font-size:16px; }
+    .type-seg { display:flex; background:var(--input-bg); border-radius:14px; padding:4px; gap:3px; margin-bottom:10px; }
+    .type-seg .type-btn { flex:1; padding:11px 6px; border-radius:10px; font-size:15px; font-weight:bold; cursor:pointer; text-align:center; background:transparent; border:none; color:#888; }
+    .type-seg .type-btn.active { background:var(--primary); color:var(--bg); }
+    .type-chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px; }
+    .type-chips .type-btn { border-radius:20px; padding:6px 13px; font-size:12px; font-weight:500; }
     .submit-btn { width:100%; background:var(--primary); color:var(--bg); border:none; padding:16px; border-radius:12px; font-weight:bold; cursor:pointer; }
     .detail-row { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid var(--border); font-size:14px; }
     .action-item { padding:18px; text-align:center; font-size:16px; border-bottom:1px solid var(--border); cursor:pointer; }
@@ -254,17 +254,19 @@
     <div id="recordModal" class="modal"><div class="modal-content">
       <div class="modal-header"><span id="recordModalTitle">📝 新增紀錄</span><div class="close-btn" onclick="closeRecordModal()">✕</div></div>
       <form id="recordForm">
-        <div class="type-scroll" id="mainTypeScroll">
-          <div class="type-btn active" onclick="selectMainType('支出',this)"><span class="ti">💸</span>支出</div>
-          <div class="type-btn" onclick="selectMainType('收入',this)"><span class="ti">💰</span>收入</div>
-          <div class="type-btn" onclick="selectMainType('轉帳',this)"><span class="ti">🔄</span>轉帳</div>
-          <div class="type-btn" onclick="selectMainType('繳卡費',this)"><span class="ti">💳</span>繳卡費</div>
-          <div class="type-btn" id="btnFixedExp" onclick="selectMainType('固定支出',this)"><span class="ti">📅</span>固定支出</div>
-          <div class="type-btn" id="btnSub" onclick="selectMainType('訂閱',this)"><span class="ti">♻️</span>訂閱</div>
-          <div class="type-btn" onclick="selectMainType('點數折抵',this)"><span class="ti">🎁</span>點數折抵</div>
-          <div class="type-btn" onclick="selectMainType('手續費',this)"><span class="ti">🏧</span>手續費</div>
-          <div class="type-btn" onclick="selectMainType('借出',this)"><span class="ti">🤝</span>借出</div>
-          <div class="type-btn" onclick="selectMainType('收回',this)"><span class="ti">💫</span>收回</div>
+        <div class="type-seg" id="mainTypeScroll">
+          <div class="type-btn active" onclick="selectMainType('支出',this)">支出</div>
+          <div class="type-btn" onclick="selectMainType('收入',this)">收入</div>
+          <div class="type-btn" onclick="selectMainType('轉帳',this)">轉帳</div>
+        </div>
+        <div class="type-chips">
+          <div class="type-btn" onclick="selectMainType('繳卡費',this)">💳 繳卡費</div>
+          <div class="type-btn" id="btnFixedExp" onclick="selectMainType('固定支出',this)">📅 固定支出</div>
+          <div class="type-btn" id="btnSub" onclick="selectMainType('訂閱',this)">♻️ 訂閱</div>
+          <div class="type-btn" onclick="selectMainType('點數折抵',this)">🎁 點數折抵</div>
+          <div class="type-btn" onclick="selectMainType('手續費',this)">🏧 手續費</div>
+          <div class="type-btn" onclick="selectMainType('借出',this)">🤝 借出</div>
+          <div class="type-btn" onclick="selectMainType('收回',this)">💫 收回</div>
         </div>
         <div id="fixedTypeWrapper" style="display:none;margin-bottom:15px;">
           <div style="font-size:12px;color:#888;margin-bottom:10px;text-align:center;">💡 此排程的扣款形式：</div>
