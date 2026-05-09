@@ -685,6 +685,30 @@ function clearCache() {
   showAlert('快取已清除，請重新整理頁面。');
 }
 
+async function resetSpreadsheet() {
+  showConfirm('確定要重置試算表嗎？\n\n這將刪除 Google Drive 上的「包子記帳資料」，並建立全新格式的試算表。\n\n⚠️ 所有記帳資料將會消失！', async () => {
+    try {
+      showAlert('正在重置中，請稍候...');
+      const sid = Sheets.sid();
+      if (sid) {
+        const token = await Auth.getToken();
+        await fetch(`https://www.googleapis.com/drive/v3/files/${sid}`, {
+          method: 'DELETE',
+          headers: { Authorization: 'Bearer ' + token }
+        });
+      }
+      localStorage.removeItem('spreadsheetId');
+      await Sheets.initSpreadsheet();
+      const monthStr = currentMonth;
+      const syncData = await Sheets.getSyncData(monthStr);
+      applySyncData(syncData, monthStr);
+      showAlert('✅ 試算表已重置完成！新格式已建立。');
+    } catch(e) {
+      showAlert('❌ 重置失敗：' + e.message);
+    }
+  });
+}
+
 // ── 桌面圖示 ──────────────────────────────────────────────
 function handleIconUpload(input) {
   const file = input.files[0];
