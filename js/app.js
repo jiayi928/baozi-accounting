@@ -687,8 +687,9 @@ function clearCache() {
 
 async function resetSpreadsheet() {
   showConfirm('確定要重置試算表嗎？\n\n這將刪除 Google Drive 上的「包子記帳資料」，並建立全新格式的試算表。\n\n⚠️ 所有記帳資料將會消失！', async () => {
+    const btn = document.querySelector('[onclick="resetSpreadsheet()"]');
+    if (btn) { btn.innerText = '重置中...'; btn.disabled = true; }
     try {
-      showAlert('正在重置中，請稍候...');
       const sid = Sheets.sid();
       if (sid) {
         const token = await Auth.getToken();
@@ -699,12 +700,14 @@ async function resetSpreadsheet() {
       }
       localStorage.removeItem('spreadsheetId');
       await Sheets.initSpreadsheet();
-      const monthStr = currentMonth;
+      const monthStr = document.getElementById('monthPicker').value;
       const syncData = await Sheets.getSyncData(monthStr);
       applySyncData(syncData, monthStr);
       showAlert('✅ 試算表已重置完成！新格式已建立。');
     } catch(e) {
       showAlert('❌ 重置失敗：' + e.message);
+    } finally {
+      if (btn) { btn.innerText = '重置'; btn.disabled = false; }
     }
   });
 }

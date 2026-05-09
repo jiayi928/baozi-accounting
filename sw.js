@@ -1,4 +1,4 @@
-const CACHE = 'baozi-v8';
+const CACHE = 'baozi-v9';
 const PRECACHE = [
   '/',
   '/index.html',
