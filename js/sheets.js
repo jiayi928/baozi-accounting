@@ -104,16 +104,16 @@ const Sheets = {
 
     // 寫入標題列與預設資料
     await Promise.all([
-      this.setValues(`${CONFIG.SHEETS.RECORDS}!A1:G1`,
-        [['日期','類型','項目','金額','分類','帳戶(出)','帳戶(入)']]),
+      this.setValues(`${CONFIG.SHEETS.RECORDS}!A1:H1`,
+        [['日期時間','收支類型','項目名稱','金額','會計科目','轉出帳戶(扣款)','轉入帳戶(存入)','備註']]),
       this.setValues(`${CONFIG.SHEETS.ACCOUNTS}!A1:D1`,
-        [['銀行名稱','初始金額','備註','備用']]),
+        [['帳戶名稱','初始餘額','目前餘額','備註']]),
       this.setValues(`${CONFIG.SHEETS.ACCOUNTS}!F1:L1`,
-        [['卡片名稱','總額度','結帳日','繳款日','自動扣款帳戶','備用','備用']]),
-      this.setValues(`${CONFIG.SHEETS.FIXED}!A1:I1`,
-        [['項目','類型','金額','扣款日','總期數','已繳期數','帳戶(出)','帳戶(入)','分類']]),
-      this.setValues(`${CONFIG.SHEETS.BUDGET}!A1:B1`,
-        [['分類','月預算']]),
+        [['信用卡名稱','總信用額度','本月應付卡費','剩餘可用額度','結帳日','繳款日','自動扣款帳戶']]),
+      this.setValues(`${CONFIG.SHEETS.FIXED}!A1:J1`,
+        [['項目名稱','收支類型','每月金額','每月扣款日','總期數','已繳期數','轉出帳戶(扣款)','轉入帳戶(存入)','會計科目','未繳總餘額']]),
+      this.setValues(`${CONFIG.SHEETS.BUDGET}!A1:D1`,
+        [['會計科目','每月預算','本月實際花費','剩餘預算差異']]),
       this._writeDefaultSettings(),
       this._writeDefaultCategories()
     ]);
@@ -127,8 +127,16 @@ const Sheets = {
   },
 
   async _writeDefaultCategories() {
-    const rows = CONFIG.DEFAULT_CATEGORIES.map(c => [c, 0]);
-    await this.setValues(`${CONFIG.SHEETS.BUDGET}!A2:B${rows.length + 1}`, rows);
+    const rec = CONFIG.SHEETS.RECORDS;
+    const rows = CONFIG.DEFAULT_CATEGORIES.map((c, i) => {
+      const r = i + 2;
+      return [
+        c, 0,
+        `=SUMIFS('${rec}'!D:D,'${rec}'!E:E,A${r},'${rec}'!B:B,"支出",'${rec}'!A:A,">="&EOMONTH(TODAY(),-1)+1,'${rec}'!A:A,"<="&EOMONTH(TODAY(),0))`,
+        `=B${r}-C${r}`
+      ];
+    });
+    await this.setValues(`${CONFIG.SHEETS.BUDGET}!A2:D${rows.length + 1}`, rows);
   },
 
   // ── 設定 ──────────────────────────────────────────────────
@@ -174,7 +182,7 @@ const Sheets = {
       if (row[0]) {
         const name = row[0].toString();
         const initial = Number(row[1]) || 0;
-        const note = row[2] ? row[2].toString() : '';
+        const note = row[3] ? row[3].toString() : ''; // D欄：備註（C欄為公式）
         const balance = this._calcBankBalance(name, initial, allRecords);
         banks.push(name);
         dashboard.banks.push({ name, balance, note });
@@ -184,9 +192,9 @@ const Sheets = {
       if (row[5]) {
         const name = row[5].toString();
         const limit = Number(row[6]) || 0;
-        const billDate = Number(row[7]) || 1;
-        const payDate = Number(row[8]) || 10;
-        const autoPayAcc = row[9] ? row[9].toString() : '';
+        const billDate = Number(row[9]) || 1;   // J欄：結帳日
+        const payDate = Number(row[10]) || 10;  // K欄：繳款日
+        const autoPayAcc = row[11] ? row[11].toString() : ''; // L欄：自動扣款帳戶
         const totalDebt = this._calcCardDebt(name, allRecords);
         const currentBill = this._calcCurrentBill(name, totalDebt, billDate, allRecords);
         const remain = limit - totalDebt;
@@ -286,11 +294,14 @@ const Sheets = {
     if (data.isFixed) {
       const d = new Date(data.date);
       if (data.type === '固定支出' || data.type === '訂閱') data.type = '支出';
-      await this.appendValues(CONFIG.SHEETS.FIXED, [
+      const fixedRows = await this.getValues(`${CONFIG.SHEETS.FIXED}!A:A`);
+      const nextRow = fixedRows.length + 1;
+      await this.setValues(`${CONFIG.SHEETS.FIXED}!A${nextRow}:J${nextRow}`, [[
         data.item, data.type, data.amount, d.getDate(),
         data.totalPeriods || '', data.paidPeriods || '',
-        data.accountOut || '', data.accountIn || '', data.category || ''
-      ]);
+        data.accountOut || '', data.accountIn || '', data.category || '',
+        `=IF(E${nextRow}="",0,C${nextRow}*(E${nextRow}-F${nextRow}))`
+      ]]);
       return { msg: '✅ 已加入自動扣款排程！', syncData: await this.getSyncData(monthStr) };
     }
     await this.appendValues(CONFIG.SHEETS.RECORDS, [
@@ -339,17 +350,21 @@ const Sheets = {
   async addBankAccount(bankData, monthStr) {
     const rows = await this.getValues(`${CONFIG.SHEETS.ACCOUNTS}!A:A`);
     const nextRow = rows.length + 1;
+    const rec = CONFIG.SHEETS.RECORDS;
     await this.setValues(`${CONFIG.SHEETS.ACCOUNTS}!A${nextRow}:D${nextRow}`, [[
-      bankData.name, bankData.initial || 0, bankData.note || '', ''
+      bankData.name,
+      bankData.initial || 0,
+      `=B${nextRow}+SUMIFS('${rec}'!D:D,'${rec}'!G:G,A${nextRow})-SUMIFS('${rec}'!D:D,'${rec}'!F:F,A${nextRow})`,
+      bankData.note || ''
     ]]);
     return { msg: `✅ 銀行「${bankData.name}」新增成功！`, syncData: await this.getSyncData(monthStr) };
   },
 
   async updateBankNote(bankName, newNote, monthStr) {
-    const rows = await this.getValues(`${CONFIG.SHEETS.ACCOUNTS}!A:C`);
+    const rows = await this.getValues(`${CONFIG.SHEETS.ACCOUNTS}!A:A`);
     for (let i = 1; i < rows.length; i++) {
       if (rows[i][0] === bankName) {
-        await this.setValues(`${CONFIG.SHEETS.ACCOUNTS}!C${i+1}`, [[newNote]]);
+        await this.setValues(`${CONFIG.SHEETS.ACCOUNTS}!D${i+1}`, [[newNote]]); // D欄：備註
         return { msg: '✅ 備註更新成功！', syncData: await this.getSyncData(monthStr) };
       }
     }
@@ -359,9 +374,16 @@ const Sheets = {
   async addCreditCard(cardData, monthStr) {
     const rows = await this.getValues(`${CONFIG.SHEETS.ACCOUNTS}!F:F`);
     const nextRow = Math.max(rows.length + 1, 2);
+    const rec = CONFIG.SHEETS.RECORDS;
+    // F=名稱, G=額度, H=本月應付(公式), I=剩餘額度(公式), J=結帳日, K=繳款日, L=自動扣款帳戶
     await this.setValues(`${CONFIG.SHEETS.ACCOUNTS}!F${nextRow}:L${nextRow}`, [[
-      cardData.name, cardData.limit, cardData.billDate,
-      cardData.payDate, cardData.autoPayAcc || '', '', ''
+      cardData.name,
+      cardData.limit,
+      `=SUMIFS('${rec}'!D:D,'${rec}'!F:F,F${nextRow})-SUMIFS('${rec}'!D:D,'${rec}'!G:G,F${nextRow})`,
+      `=G${nextRow}-H${nextRow}`,
+      cardData.billDate,
+      cardData.payDate,
+      cardData.autoPayAcc || ''
     ]]);
     return { msg: `✅ 信用卡「${cardData.name}」新增成功！`, syncData: await this.getSyncData(monthStr) };
   },
@@ -369,9 +391,14 @@ const Sheets = {
   // ── 分類 ──────────────────────────────────────────────────
 
   async addCategory(name, monthStr) {
-    const rows = await this.getValues(`${CONFIG.SHEETS.BUDGET}!A:B`);
+    const rows = await this.getValues(`${CONFIG.SHEETS.BUDGET}!A:A`);
     const nextRow = rows.length + 1;
-    await this.setValues(`${CONFIG.SHEETS.BUDGET}!A${nextRow}:B${nextRow}`, [[name, 0]]);
+    const rec = CONFIG.SHEETS.RECORDS;
+    await this.setValues(`${CONFIG.SHEETS.BUDGET}!A${nextRow}:D${nextRow}`, [[
+      name, 0,
+      `=SUMIFS('${rec}'!D:D,'${rec}'!E:E,A${nextRow},'${rec}'!B:B,"支出",'${rec}'!A:A,">="&EOMONTH(TODAY(),-1)+1,'${rec}'!A:A,"<="&EOMONTH(TODAY(),0))`,
+      `=B${nextRow}-C${nextRow}`
+    ]]);
     return { msg: `✅ 分類「${name}」新增成功！`, syncData: await this.getSyncData(monthStr) };
   },
 
