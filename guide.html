@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>使用說明 - 包子記帳</title>
+  <style>
+    :root { --green: #06C755; --blue: #1a73e8; --dark: #1e1e1e; --card: #fff; --text: #333; --sub: #666; --border: #eee; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; background: #f5f7fa; color: var(--text); }
+
+    /* 頂部 Hero */
+    .hero { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; padding: 50px 20px 40px; text-align: center; }
+    .hero .icon { font-size: 64px; margin-bottom: 16px; }
+    .hero h1 { font-size: 28px; margin-bottom: 8px; }
+    .hero p { font-size: 15px; color: rgba(255,255,255,0.7); margin-bottom: 24px; }
+    .hero a { display: inline-block; background: #fff; color: #1a1a2e; padding: 12px 28px; border-radius: 50px; font-weight: bold; text-decoration: none; font-size: 15px; }
+
+    /* 目錄 */
+    .toc { background: #fff; padding: 20px; margin: 20px; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .toc h2 { font-size: 16px; margin-bottom: 12px; color: var(--sub); }
+    .toc a { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--text); font-size: 15px; }
+    .toc a:last-child { border-bottom: none; }
+    .toc .num { background: var(--blue); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; }
+
+    /* 章節 */
+    .section { margin: 0 20px 24px; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-top: 8px; }
+    .section-header .icon { font-size: 28px; }
+    .section-header h2 { font-size: 20px; font-weight: bold; }
+
+    /* 步驟卡片 */
+    .step { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .step-num { display: inline-flex; align-items: center; justify-content: center; background: var(--blue); color: #fff; width: 26px; height: 26px; border-radius: 50%; font-size: 13px; font-weight: bold; margin-bottom: 10px; }
+    .step h3 { font-size: 16px; margin-bottom: 6px; }
+    .step p { font-size: 14px; color: var(--sub); line-height: 1.6; }
+
+    /* 模擬畫面 */
+    .mockup { background: #f0f0f0; border-radius: 20px; padding: 16px; margin: 14px 0; border: 2px solid #ddd; }
+    .mockup-bar { background: #fff; border-radius: 10px; padding: 10px 14px; margin-bottom: 10px; font-size: 13px; color: #333; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .mockup-bar .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .mockup-card { background: #fff; border-radius: 14px; padding: 14px; margin-bottom: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+    .mockup-title { font-size: 11px; color: #999; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .mockup-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+    .mockup-row:last-child { border-bottom: none; }
+    .val-pos { color: #2e7d32; font-weight: bold; }
+    .val-neg { color: #c62828; font-weight: bold; }
+    .btn-mock { display: inline-block; padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: bold; text-align: center; }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-dark { background: #1a1a2e; color: #fff; }
+    .btn-outline { background: #fff; color: #333; border: 1px solid #ddd; }
+    .tag { display: inline-block; background: #f0f0f0; border-radius: 6px; padding: 3px 8px; font-size: 11px; color: #666; margin-right: 4px; }
+    .nav-bar { display: flex; justify-content: space-around; background: #fff; border-radius: 14px; padding: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.06); }
+    .nav-item { text-align: center; font-size: 11px; color: #999; }
+    .nav-item.active { color: #1a1a2e; font-weight: bold; }
+    .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+    /* 提示 */
+    .tip { background: #e8f4fd; border-left: 4px solid var(--blue); border-radius: 0 10px 10px 0; padding: 12px 14px; margin: 12px 0; font-size: 13px; color: #1565c0; line-height: 1.6; }
+    .tip-green { background: #e8f5e9; border-color: var(--green); color: #2e7d32; }
+    .tip-orange { background: #fff3e0; border-color: #ff9800; color: #e65100; }
+
+    /* 底部 */
+    footer { text-align: center; padding: 30px 20px; color: #aaa; font-size: 13px; }
+
+    /* 分隔線 */
+    .divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+    .badge { display: inline-block; background: #1a1a2e; color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 11px; vertical-align: middle; }
+    .badge-green { background: var(--green); }
+    .badge-red { background: #e53e3e; }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="icon">🥟</div>
+  <h1>包子記帳 使用說明</h1>
+  <p>簡單好用的個人記帳 App，資料安全存在您的 Google 雲端</p>
+  <a href="https://jiayi928.github.io/baozi-accounting/" target="_blank">▶ 立即開啟 App</a>
+</div>
+
+<!-- 目錄 -->
+<div style="margin: 20px 20px 0;">
+  <div class="toc">
+    <h2>📋 目錄</h2>
+    <a href="#start"><div class="num">1</div> 開始使用／登入</a>
+    <a href="#add"><div class="num">2</div> 新增記帳</a>
+    <a href="#dashboard"><div class="num">3</div> 資產總覽</a>
+    <a href="#history"><div class="num">4</div> 查看明細</a>
+    <a href="#account"><div class="num">5</div> 管理帳戶與信用卡</a>
+    <a href="#line"><div class="num">6</div> LINE 通知設定</a>
+    <a href="#settings"><div class="num">7</div> 個人設定</a>
+    <a href="#install"><div class="num">8</div> 加入手機桌面</a>
+  </div>
+</div>
+
+<!-- 1. 開始使用 -->
+<div class="section" id="start" style="margin-top:24px;">
+  <div class="section-header">
+    <div class="icon">🚀</div>
+    <h2>開始使用／登入</h2>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>開啟 App 網址</h3>
+    <p>用手機或電腦瀏覽器開啟 App，點「使用 Google 帳號登入」按鈕。</p>
+    <div class="mockup">
+      <div style="text-align:center; padding: 20px 0;">
+        <div style="font-size:48px; margin-bottom:12px;">🥟</div>
+        <div style="font-size:18px; font-weight:bold; margin-bottom:6px;">包子記帳</div>
+        <div style="font-size:12px; color:#999; margin-bottom:20px;">您的財務小幫手</div>
+        <div class="btn-mock btn-dark" style="display:block; margin: 0 20px;">🔑 使用 Google 帳號登入</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>授權 Google 帳號</h3>
+    <p>選擇您的 Google 帳號並允許存取 Google 試算表。每位用戶的資料完全獨立，儲存在自己的 Google 雲端硬碟。</p>
+    <div class="tip">💡 第一次登入時，App 會自動在您的 Google 雲端建立「包子記帳資料」試算表。</div>
+  </div>
+</div>
+
+<!-- 2. 新增記帳 -->
+<div class="section" id="add">
+  <div class="section-header">
+    <div class="icon">✏️</div>
+    <h2>新增記帳</h2>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>點右下角「＋」按鈕</h3>
+    <p>進入記帳畫面，選擇類型、金額、分類和帳戶。</p>
+    <div class="mockup">
+      <div class="mockup-card">
+        <div class="mockup-title">交易類型</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="btn-mock btn-dark" style="font-size:12px; padding:6px 12px;">支出</span>
+          <span class="btn-mock btn-outline" style="font-size:12px; padding:6px 12px;">收入</span>
+          <span class="btn-mock btn-outline" style="font-size:12px; padding:6px 12px;">轉帳</span>
+          <span class="btn-mock btn-outline" style="font-size:12px; padding:6px 12px;">訂閱</span>
+        </div>
+      </div>
+      <div class="mockup-card">
+        <div class="mockup-title">分類</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="tag">🍔 餐飲</span>
+          <span class="tag">🚗 交通</span>
+          <span class="tag">🏠 居住</span>
+          <span class="tag">🎬 娛樂</span>
+          <span class="tag">🛍️ 購物</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>交易類型說明</h3>
+    <p>根據不同情境選擇正確的類型：</p>
+    <div style="margin-top:10px;">
+      <div class="mockup-row"><span>💸 <b>支出</b></span><span style="font-size:12px;color:#666;">一般消費</span></div>
+      <div class="mockup-row"><span>💰 <b>收入</b></span><span style="font-size:12px;color:#666;">薪水、收款</span></div>
+      <div class="mockup-row"><span>🔄 <b>轉帳</b></span><span style="font-size:12px;color:#666;">帳戶間轉移</span></div>
+      <div class="mockup-row"><span>💳 <b>繳卡費</b></span><span style="font-size:12px;color:#666;">信用卡還款</span></div>
+      <div class="mockup-row"><span>📅 <b>訂閱</b></span><span style="font-size:12px;color:#666;">定期扣款（Netflix 等）</span></div>
+      <div class="mockup-row"><span>🏦 <b>固定支出</b></span><span style="font-size:12px;color:#666;">房租、貸款等</span></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <h3>使用模板快速記帳</h3>
+    <p>填好常用項目後，點右上角「＋模板」儲存。下次記帳直接點模板即可，省去重複輸入。</p>
+    <div class="tip tip-green">✅ 適合每天都有的固定消費，例如：早餐、通勤費。</div>
+  </div>
+</div>
+
+<!-- 3. 資產總覽 -->
+<div class="section" id="dashboard">
+  <div class="section-header">
+    <div class="icon">📊</div>
+    <h2>資產總覽</h2>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>查看整體財務狀況</h3>
+    <p>總覽頁顯示您的淨資產、流動資產、投資資產和負債。</p>
+    <div class="mockup">
+      <div class="mockup-card">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center;">
+          <div><div style="font-size:11px;color:#999;">淨資產</div><div style="font-size:18px;font-weight:bold;">$128,500</div></div>
+          <div><div style="font-size:11px;color:#999;">流動資產</div><div style="font-size:18px;font-weight:bold;color:#1565c0;">$98,500</div></div>
+          <div><div style="font-size:11px;color:#999;">投資資產</div><div style="font-size:18px;font-weight:bold;color:#2e7d32;">$30,000</div></div>
+          <div><div style="font-size:11px;color:#999;">負債</div><div style="font-size:18px;font-weight:bold;color:#c62828;">$8,200</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>圓餅圖分析支出</h3>
+    <p>點各分類可查看該類別的所有消費明細。</p>
+    <div class="mockup">
+      <div style="text-align:center; padding:10px 0;">
+        <div style="font-size:40px; margin-bottom:8px;">🥧</div>
+        <div style="font-size:12px; color:#999; margin-bottom:12px;">本月總花費 $12,580</div>
+        <div style="display:flex; flex-direction:column; gap:6px; text-align:left;">
+          <div class="mockup-row"><span>🍔 餐飲</span><span class="val-neg">$4,200 <span style="color:#999;font-weight:normal;font-size:11px;">33%</span></span></div>
+          <div class="mockup-row"><span>🚗 交通</span><span class="val-neg">$2,800 <span style="color:#999;font-weight:normal;font-size:11px;">22%</span></span></div>
+          <div class="mockup-row"><span>🛍️ 購物</span><span class="val-neg">$3,100 <span style="color:#999;font-weight:normal;font-size:11px;">25%</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. 查看明細 -->
+<div class="section" id="history">
+  <div class="section-header">
+    <div class="icon">📋</div>
+    <h2>查看明細</h2>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>切換月份</h3>
+    <p>點頂部的月份選擇器，可切換查看任意月份的紀錄。</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>搜尋特定記錄</h3>
+    <p>輸入關鍵字可搜尋品項名稱、分類或帳戶，並自動統計搜尋結果的金額。</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <h3>編輯或刪除記錄</h3>
+    <p>點每筆記錄右側的「⋮」按鈕，可選擇編輯或刪除。</p>
+    <div class="mockup">
+      <div class="mockup-card">
+        <div class="mockup-row">
+          <div><b>早餐</b><br><span style="font-size:11px;color:#999;">05/10 · 玉山銀行</span></div>
+          <div style="display:flex;align-items:center;gap:10px;"><span class="val-neg">$85</span><span style="color:#aaa;font-size:18px;">⋮</span></div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <div class="btn-mock btn-outline" style="flex:1;text-align:center;">✏️ 編輯</div>
+        <div class="btn-mock" style="flex:1;text-align:center;background:#e53e3e;color:#fff;">🗑️ 刪除</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. 帳戶管理 -->
+<div class="section" id="account">
+  <div class="section-header">
+    <div class="icon">🏦</div>
+    <h2>管理帳戶與信用卡</h2>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>新增銀行帳戶</h3>
+    <p>記帳時選擇帳戶，下拉選單選「＋ 新增銀行...」，填入名稱和初始金額即可。</p>
+    <div class="tip">💡 App 會自動根據收支記錄計算最新餘額。</div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>新增信用卡</h3>
+    <p>下拉選單選「＋ 新增信用卡...」，填入信用卡名稱、額度、帳單日和繳費日。</p>
+    <div class="mockup">
+      <div class="mockup-card">
+        <div class="mockup-title">💳 信用卡</div>
+        <div class="mockup-row"><span>玉山 Pi 卡</span><span class="val-neg">本月 $3,200</span></div>
+        <div style="font-size:11px;color:#999;padding:4px 0;">帳單日 15 號 · 繳費日 5 號 · 額度 $80,000</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <h3>查看帳戶明細</h3>
+    <p>在總覽頁點任意銀行或信用卡名稱，即可查看該帳戶的所有交易記錄。</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <h3>自動扣款排程</h3>
+    <p>新增「訂閱」或「固定支出」時，App 會自動建立每月扣款排程，不需重複輸入。點「查看自動扣款排程」可查看所有排程。</p>
+  </div>
+</div>
+
+<!-- 6. LINE 通知 -->
+<div class="section" id="line">
+  <div class="section-header">
+    <div class="icon">🤖</div>
+    <h2>LINE 通知設定</h2>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>連結 LINE 帳號</h3>
+    <p>到「設定」頁面，點「🔗 連結 LINE 帳號」，透過 LINE 授權完成連結，不需手動複製任何 ID。</p>
+    <div class="mockup">
+      <div class="mockup-card">
+        <div class="mockup-title">🤖 LINE 通知設定</div>
+        <div class="btn-mock btn-green" style="display:block;text-align:center;margin-top:8px;">🔗 連結 LINE 帳號</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>連結成功後</h3>
+    <p>畫面會顯示「✅ LINE 帳號已連結」，之後即可透過「立即發送」測試推播，或由 App 自動發送財務提醒。</p>
+    <div class="mockup">
+      <div class="mockup-card" style="background:#e8f5e9;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="font-size:20px;">✅</span>
+          <div>
+            <div style="font-size:13px;color:#2e7d32;font-weight:bold;">LINE 帳號已連結</div>
+            <div style="font-size:12px;color:#555;">帳號：王小明</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <div class="btn-mock btn-green" style="flex:1;text-align:center;font-size:12px;">🔄 重新連結</div>
+          <div class="btn-mock" style="flex:1;text-align:center;font-size:12px;background:#fff;color:#e53e3e;border:1px solid #e53e3e;">✕ 取消連結</div>
+        </div>
+      </div>
+    </div>
+    <div class="tip tip-orange">⚠️ 連結前需先將 LINE 官方帳號「<b>@570lljaw</b>」加為好友，才能收到通知。</div>
+  </div>
+</div>
+
+<!-- 7. 設定 -->
+<div class="section" id="settings">
+  <div class="section-header">
+    <div class="icon">⚙️</div>
+    <h2>個人設定</h2>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>可自訂的項目</h3>
+    <div style="margin-top:8px;">
+      <div class="mockup-row"><span>🏷️ App 名稱</span><span style="font-size:12px;color:#666;">自訂顯示名稱</span></div>
+      <div class="mockup-row"><span>📈 投資關鍵字</span><span style="font-size:12px;color:#666;">辨識投資類支出</span></div>
+      <div class="mockup-row"><span>🚫 排除分類</span><span style="font-size:12px;color:#666;">不計入支出統計</span></div>
+      <div class="mockup-row"><span>🔔 大額提醒門檻</span><span style="font-size:12px;color:#666;">超過金額自動通知</span></div>
+      <div class="mockup-row"><span>🌙 深色／亮色模式</span><span style="font-size:12px;color:#666;">跟隨系統或手動切換</span></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>自訂桌面圖示</h3>
+    <p>上傳自己喜歡的圖片作為 App 圖示，重新加入桌面後即可看到效果。</p>
+    <div class="tip tip-green">✅ 支援 JPG、PNG 格式，自動裁切為正方形。</div>
+  </div>
+</div>
+
+<!-- 8. 加入桌面 -->
+<div class="section" id="install">
+  <div class="section-header">
+    <div class="icon">📱</div>
+    <h2>加入手機桌面</h2>
+  </div>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <h3>iPhone / Safari</h3>
+    <p>用 Safari 開啟 App → 點底部分享按鈕「⎙」→ 選「加入主畫面」→ 點「新增」</p>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <h3>Android / Chrome</h3>
+    <p>用 Chrome 開啟 App → 點右上角「⋮」選單 → 選「新增至主畫面」或「安裝應用程式」</p>
+  </div>
+
+  <div class="tip tip-green">✅ 加入桌面後，App 會全螢幕開啟，體驗和原生 App 一樣！</div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <h3>電腦版 Chrome</h3>
+    <p>用 Chrome 開啟 App → 網址列右側點「安裝」圖示 → 確認安裝</p>
+  </div>
+</div>
+
+<!-- 常見問題 -->
+<div class="section">
+  <div class="section-header">
+    <div class="icon">❓</div>
+    <h2>常見問題</h2>
+  </div>
+
+  <div class="step">
+    <h3>資料會遺失嗎？</h3>
+    <p>不會。所有資料儲存在您自己的 Google 雲端硬碟，App 只是讀寫您的試算表，不會存在其他地方。</p>
+  </div>
+
+  <div class="step">
+    <h3>換手機後資料還在嗎？</h3>
+    <p>在。重新登入相同的 Google 帳號即可，資料完全保留。</p>
+  </div>
+
+  <div class="step">
+    <h3>可以多裝置同時使用嗎？</h3>
+    <p>可以。手機、平板、電腦都能登入，資料即時同步。</p>
+  </div>
+
+  <div class="step">
+    <h3>收不到 LINE 通知怎麼辦？</h3>
+    <p>1. 確認已將「@570lljaw」加為 LINE 好友<br>2. 確認設定頁顯示「✅ LINE 帳號已連結」<br>3. 點「立即發送」測試</p>
+  </div>
+</div>
+
+<footer>
+  <div style="font-size:24px; margin-bottom:8px;">🥟</div>
+  包子記帳 © 2026<br>
+  <a href="https://jiayi928.github.io/baozi-accounting/" style="color:#1a73e8; text-decoration:none; margin-top:8px; display:inline-block;">▶ 開啟 App</a>
+  ·
+  <a href="https://jiayi928.github.io/baozi-accounting/privacy.html" style="color:#999; text-decoration:none;">隱私權政策</a>
+</footer>
+
+</body>
+</html>
